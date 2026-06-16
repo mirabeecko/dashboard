@@ -1,11 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import Sidebar from './Sidebar';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Menu } from 'lucide-react';
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (status === 'loading') {
     return (
@@ -61,9 +63,22 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="ml-64 flex-1 bg-gray-50">
-        <div className="p-8">{children}</div>
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Mobile top bar */}
+      <div className="fixed left-0 right-0 top-0 z-20 flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 lg:hidden">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          aria-label="Otevřít menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <span className="text-sm font-semibold text-gray-900">Analytics Hub</span>
+      </div>
+
+      <main className="flex-1 bg-gray-50 pt-14 lg:ml-64 lg:pt-0">
+        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
       </main>
     </div>
   );
