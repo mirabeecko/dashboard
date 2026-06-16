@@ -53,7 +53,7 @@ interface PagesData {
     path: string;
     pageViews: number;
     sessions: number;
-    avgEngagementTime: number;
+    avgEngagementTimePerSession: number;
   }>;
 }
 

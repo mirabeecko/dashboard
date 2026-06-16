@@ -110,7 +110,7 @@ export async function getTopPages(
   const data = await runReport(
     accessToken,
     propertyId,
-    ['screenPageViews', 'sessions', 'averageEngagementTime'],
+    ['screenPageViews', 'sessions', 'averageEngagementTimePerSession'],
     ['pageTitle', 'unifiedScreenName'],
     dateRange,
     10,
@@ -122,7 +122,7 @@ export async function getTopPages(
     path: row.dimensionValues?.[1]?.value || '',
     pageViews: parseInt(row.metricValues?.[0]?.value || '0', 10),
     sessions: parseInt(row.metricValues?.[1]?.value || '0', 10),
-    avgEngagementTime: parseFloat(row.metricValues?.[2]?.value || '0'),
+    avgEngagementTimePerSession: parseFloat(row.metricValues?.[2]?.value || '0'),
   }));
 }
 
