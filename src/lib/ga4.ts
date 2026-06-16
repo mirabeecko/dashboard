@@ -58,7 +58,7 @@ export async function getOverviewMetrics(
       'bounceRate',
       'averageSessionDuration',
       'screenPageViews',
-      'keyEvents',
+      'conversions',
       'purchaseRevenue',
     ],
     [],
@@ -110,8 +110,8 @@ export async function getTopPages(
   const data = await runReport(
     accessToken,
     propertyId,
-    ['screenPageViews', 'sessions', 'averageEngagementTimePerSession'],
-    ['pageTitle', 'unifiedScreenName'],
+    ['screenPageViews', 'sessions'],
+    ['pageTitle'],
     dateRange,
     10,
     [{ metric: { metricName: 'screenPageViews' }, desc: true }]
@@ -119,10 +119,9 @@ export async function getTopPages(
 
   return (data.rows || []).map((row) => ({
     pageTitle: row.dimensionValues?.[0]?.value || 'Unknown',
-    path: row.dimensionValues?.[1]?.value || '',
+    path: '',
     pageViews: parseInt(row.metricValues?.[0]?.value || '0', 10),
     sessions: parseInt(row.metricValues?.[1]?.value || '0', 10),
-    avgEngagementTimePerSession: parseFloat(row.metricValues?.[2]?.value || '0'),
   }));
 }
 
@@ -134,11 +133,11 @@ export async function getConversions(
   const data = await runReport(
     accessToken,
     propertyId,
-    ['keyEvents', 'eventCount'],
+    ['conversions', 'eventCount'],
     ['eventName'],
     dateRange,
     20,
-    [{ metric: { metricName: 'keyEvents' }, desc: true }]
+    [{ metric: { metricName: 'conversions' }, desc: true }]
   );
 
   return (data.rows || []).map((row) => ({
@@ -156,7 +155,7 @@ export async function getDailyTrend(
   const data = await runReport(
     accessToken,
     propertyId,
-    ['sessions', 'totalUsers', 'screenPageViews', 'keyEvents'],
+    ['sessions', 'totalUsers', 'screenPageViews', 'conversions'],
     ['date'],
     dateRange,
     undefined,
