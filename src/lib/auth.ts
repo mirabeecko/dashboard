@@ -1,5 +1,36 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { google } from 'googleapis';
+
+async function refreshAccessToken(token: any) {
+  try {
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET
+    );
+    oauth2Client.setCredentials({
+      refresh_token: token.refreshToken,
+    });
+
+    const { credentials } = await oauth2Client.refreshAccessToken();
+
+    return {
+      ...token,
+      accessToken: credentials.access_token,
+      expiresAt: credentials.expiry_date
+        ? Math.floor(credentials.expiry_date / 1000)
+        : Math.floor(Date.now() / 1000) + 3600,
+      refreshToken: credentials.refresh_token ?? token.refreshToken,
+      error: undefined,
+    };
+  } catch (error) {
+    console.error('Error refreshing access token:', error);
+    return {
+      ...token,
+      error: 'RefreshAccessTokenError',
+    };
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -23,17 +54,33 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, account }) {
+      // Initial sign in
       if (account) {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-        token.expiresAt = account.expires_at;
+        return {
+          accessToken: account.access_token,
+          refreshToken: account.refresh_token,
+          expiresAt: account.expires_at,
+        };
       }
+
+      // Return previous token if the access token has not expired yet
+      // (with 60s buffer)
+      if (token.expiresAt && Date.now() < token.expiresAt * 1000 - 60000) {
+        return token;
+      }
+
+      // Access token has expired, try to refresh it
+      if (token.refreshToken) {
+        return refreshAccessToken(token);
+      }
+
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken as string | undefined;
       session.refreshToken = token.refreshToken as string | undefined;
       session.expiresAt = token.expiresAt as number | undefined;
+      session.error = token.error as string | undefined;
       return session;
     },
   },
