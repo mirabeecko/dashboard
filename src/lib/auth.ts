@@ -2,14 +2,14 @@ import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { google } from 'googleapis';
 
-async function refreshAccessToken(token: any) {
+async function refreshAccessToken(token: Record<string, unknown>) {
   try {
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET
     );
     oauth2Client.setCredentials({
-      refresh_token: token.refreshToken,
+      refresh_token: token.refreshToken as string | undefined,
     });
 
     const { credentials } = await oauth2Client.refreshAccessToken();
@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
 
       // Return previous token if the access token has not expired yet
       // (with 60s buffer)
-      if (token.expiresAt && Date.now() < token.expiresAt * 1000 - 60000) {
+      if (token.expiresAt && Date.now() < (token.expiresAt as number) * 1000 - 60000) {
         return token;
       }
 

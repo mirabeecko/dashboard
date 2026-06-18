@@ -7,6 +7,7 @@ import DashboardShell from '@/components/DashboardShell';
 import MetricCard from '@/components/MetricCard';
 import DateRangePicker from '@/components/DateRangePicker';
 import { TrendChart, TrafficChart, PagesChart, ConversionsChart } from '@/components/Charts';
+import GoogleAdsPanel from '@/components/GoogleAdsPanel';
 import { getSiteByPropertyId } from '@/config/sites';
 import {
   Users,
@@ -16,6 +17,7 @@ import {
   Clock,
   Activity,
   ArrowLeft,
+  Target,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -81,6 +83,7 @@ export default function PropertyDetailPage() {
   const [conversions, setConversions] = useState<ConversionsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'ga4' | 'ads'>('ga4');
 
   useEffect(() => {
     if (!session) return;
@@ -157,7 +160,35 @@ export default function PropertyDetailPage() {
         </div>
       </div>
 
-      {loading ? (
+      {/* Tabs */}
+      <div className="mb-6 flex gap-2 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('ga4')}
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition ${
+            activeTab === 'ga4'
+              ? 'border-gray-900 text-gray-900'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Activity className="h-4 w-4" />
+          GA4 Analytics
+        </button>
+        <button
+          onClick={() => setActiveTab('ads')}
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition ${
+            activeTab === 'ads'
+              ? 'border-gray-900 text-gray-900'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Target className="h-4 w-4" />
+          Google Ads
+        </button>
+      </div>
+
+      {activeTab === 'ads' ? (
+        <GoogleAdsPanel customerId={site?.googleAdsCustomerId} />
+      ) : loading ? (
         <div className="flex items-center justify-center py-20">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900" />
         </div>
